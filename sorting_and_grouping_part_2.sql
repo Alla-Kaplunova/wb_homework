@@ -42,19 +42,19 @@ WITH seller_types AS (
     FROM sellers
     WHERE category != 'Bedding'
     GROUP BY seller_id
-),
-poor_sellers AS (
-    SELECT d.*
-    FROM sellers d
-    JOIN seller_types st ON d.seller_id = st.seller_id
-    WHERE st.seller_type = 'poor' AND d.category != 'Bedding'
 )
 SELECT 
     seller_id,
     DATE_PART('year', AGE(TO_DATE(date, 'DD/MM/YYYY'), TO_DATE(date_reg, 'DD/MM/YYYY'))) * 12 +
     DATE_PART('month', AGE(TO_DATE(date, 'DD/MM/YYYY'), TO_DATE(date_reg, 'DD/MM/YYYY'))) AS month_from_registration,
     MAX(delivery_days) - MIN(delivery_days) AS max_delivery_difference
-FROM poor_sellers
+FROM sellers
+WHERE category != 'Bedding'
+  AND seller_id IN (
+      SELECT seller_id
+      FROM seller_types
+      WHERE seller_type = 'poor'
+  )
 GROUP BY seller_id
 ORDER BY seller_id;
 
